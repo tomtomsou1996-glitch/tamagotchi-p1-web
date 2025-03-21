@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import TamaWorker from './worker?worker'
-import Screen from './Screen';
 import "./App.css";
+
+import { useEffect, useState } from "react";
+
+import Screen from './Screen';
+import TamaWorker from './worker?worker'
 
 let worker;
 

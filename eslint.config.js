@@ -13,7 +13,7 @@ import reactDom from "eslint-plugin-react-dom";
 export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
-  { ignores: ["dist"] },
+  { ignores: ["dist", "src/wasm/tama.js"] },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

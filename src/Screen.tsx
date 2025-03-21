@@ -1,55 +1,40 @@
+import { clsx } from "clsx";
+
 import { SCREEN_WIDTH } from "./App";
 
-
 interface ScreenProps {
-    matrix: number[];
+  matrix: number[];
 }
 
 export default function Screen({ matrix }: ScreenProps) {
-    const height = matrix.length;
-    if (height < 1) {
-        return <>No screen matrix data provided</>;
-    }
+  return (
+    <div className="flex flex-col">
+      {matrix.map((rowData, rowIndex) => (
+        <div
+          key={`row-${rowIndex.toString()}`}
+          className="flex"
+        >
+          {Array.from({ length: SCREEN_WIDTH }, (_, colIndex) => {
+            const bitPosition = SCREEN_WIDTH - 1 - colIndex;
+            const isOn = (rowData & (1 << bitPosition)) !== 0;
 
-    return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1px',
-            backgroundColor: '#cccccc',
-            padding: '4px'
-        }}>
-            {matrix.map((rowData, rowIndex) => (
-                <div
-                    key={`row-${rowIndex}`}
-                    className="lcd-row"
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        gap: '1px',
-                        height: `8px`
-                    }}
-                >
-                    {/* Render 32 pixels for each row by checking individual bits */}
-                    {Array.from({ length: SCREEN_WIDTH }, (_, colIndex) => {
-                        // Calculate bit position (MSB first, as in your C code)
-                        const bitPosition = SCREEN_WIDTH - 1 - colIndex;
-                        // Check if this bit is set
-                        const isOn = (rowData & (1 << bitPosition)) !== 0;
+            return (
+              <div
+                key={`pixel-${rowIndex.toString()}-${colIndex.toString()}`}
+                className={clsx(`
+                  aspect-square w-[20px] shrink-0 border-1 border-solid
+                  border-gray-50
+                `,
+                  {
 
-                        return (
-                            <div
-                                key={`pixel-${rowIndex}-${colIndex}`}
-                                style={{
-                                    width: `8px`,
-                                    height: `8px`,
-                                    backgroundColor: isOn ? 'black' : 'white'
-                                }}
-                            />
-                        );
-                    })}
-                </div>
-            ))}
+                    'bg-black': isOn,
+                    'bg-gray-100': !isOn
+                  })}
+              />
+            );
+          })}
         </div>
-    );
+      ))}
+    </div>
+  );
 };
