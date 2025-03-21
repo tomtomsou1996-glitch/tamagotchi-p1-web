@@ -1,6 +1,19 @@
+import { useEffect } from "react";
+
 import "./App.css";
 
+import { default as TamaModule } from "./wasm/tama.js";
+
 function App() {
+  useEffect(() => {
+    const loadModule = async () => {
+      const module = await (await TamaModule()).ready;
+      module._tama_wasm_init();
+    }
+
+    loadModule();
+  }, []);
+
   return (
     <>
       <h1 className="text-3xl font-bold underline">Hello world!</h1>

@@ -26,3 +26,4 @@ dist-ssr
 src/wasm/tama.b
 src/wasm/tama_rom.h
 src/wasm/tama.wasm
+src/wasm/tama.js

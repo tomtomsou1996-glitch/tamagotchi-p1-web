@@ -1,16 +1,20 @@
 
-all: tama.wasm
+all: tama.js
 
 tama_rom.h:
 	python3 convert.py
 
-tama.wasm: tama_rom.h
+tama.js: tama_rom.h
 	emcc \
 		-sEXPORTED_FUNCTIONS=_tama_wasm_init,_tama_wasm_start \
+		-s EXPORT_ES6=1 \
+		-sMODULARIZE \
+		-s EXPORT_NAME="TamaModule" \
 		-Oz \
 		tama.c $(wildcard ../tamalib/*.c) \
-		-o tama.wasm 
+		-o tama.js
 
 clean:
-	rm tama_rom.h
-	rm tama.wasm
+	rm -f tama_rom.h
+	rm -f tama.wasm
+	rm -f tama.js

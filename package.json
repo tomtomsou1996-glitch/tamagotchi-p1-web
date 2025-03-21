@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "wasm": "cd src/wasm && make clean && make",
+    "dev": "npm run wasm && vite",
+    "build": "npm run wasm && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "npm run wasm && vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.14",
