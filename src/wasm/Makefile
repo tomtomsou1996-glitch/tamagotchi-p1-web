@@ -6,7 +6,7 @@ tama_rom.h:
 
 tama.js: tama_rom.h
 	emcc \
-		-sEXPORTED_FUNCTIONS=_tama_wasm_init,_tama_wasm_start \
+		-sEXPORTED_FUNCTIONS=_tama_wasm_init,_tama_wasm_step,_tama_wasm_button \
 		-s EXPORT_ES6=1 \
 		-sMODULARIZE \
 		-s EXPORT_NAME="TamaModule" \

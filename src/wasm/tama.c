@@ -14,6 +14,9 @@
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{false}};
 static char screen_update_js_buffer[JS_BUFFER_SIZE] = {0};
+static timestamp_t screen_ts = 0;
+static u32_t ts_freq = 10000;
+static u8_t g_framerate = 30;
 
 void matrix_to_bitfield_json()
 {
@@ -175,25 +178,45 @@ void tama_wasm_init()
     printf("Initializing game\n");
 
     tamalib_register_hal(&hal);
-    tamalib_init((u12_t *)g_program, NULL, 1000);
+    tamalib_init((u12_t *)g_program, NULL, ts_freq);
 
     printf("Game initialized\n");
-
-    // for (int i = 0; i < 16; i++)
-    // {
-    //     hal_set_lcd_matrix(0, i, 1);
-    //     hal_set_lcd_matrix(31, i, 1);
-    //     for (int j = 0; j < 32; j++)
-    //     {
-    //         hal_set_lcd_matrix(j, i, 1);
-    //     }
-    // }
-
-    // hal_update_screen();
 }
 
-void tama_wasm_start()
+void tama_wasm_step()
 {
-    tamalib_mainloop();
-    tamalib_release();
+    if (!g_hal->handler())
+    {
+        tamalib_step();
+
+        timestamp_t ts = g_hal->get_timestamp();
+        if (ts - screen_ts >= ts_freq / g_framerate)
+        {
+            screen_ts = ts;
+            g_hal->update_screen();
+        }
+    }
+}
+
+void tama_wasm_button(char button, bool_t down)
+{
+    button_t tamaButton;
+    printf("Button %c, %d\n", button, down);
+    switch (button)
+    {
+    case 'A':
+        tamaButton = BTN_LEFT;
+        break;
+    case 'B':
+        tamaButton = BTN_MIDDLE;
+        break;
+    case 'C':
+        tamaButton = BTN_RIGHT;
+        break;
+    default:
+        printf("Unknown button\n");
+        return;
+    }
+
+    tamalib_set_button(tamaButton, down ? BTN_STATE_PRESSED : BTN_STATE_RELEASED);
 }

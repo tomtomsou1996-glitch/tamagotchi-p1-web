@@ -10,10 +10,7 @@ export default function Screen({ matrix }: ScreenProps) {
   return (
     <div className="flex w-full flex-col">
       {matrix.map((rowData, rowIndex) => (
-        <div
-          key={`row-${rowIndex.toString()}`}
-          className="flex"
-        >
+        <div key={`row-${rowIndex.toString()}`} className="flex">
           {Array.from({ length: SCREEN_WIDTH }, (_, colIndex) => {
             const bitPosition = SCREEN_WIDTH - 1 - colIndex;
             const isOn = (rowData & (1 << bitPosition)) !== 0;
@@ -22,17 +19,18 @@ export default function Screen({ matrix }: ScreenProps) {
               <div
                 key={`pixel-${rowIndex.toString()}-${colIndex.toString()}`}
                 style={{
-                  width: `calc(100% / ${SCREEN_WIDTH.toString()})`
+                  width: `calc(100% / ${SCREEN_WIDTH.toString()})`,
                 }}
-                className={clsx(`
-                  box-border aspect-square shrink-0 border-1 border-solid
-                  border-gray-50
-                `,
+                className={clsx(
+                  `
+                    box-border aspect-square shrink-0 border-1 border-solid
+                    border-gray-50
+                  `,
                   {
-
-                    'bg-black': isOn,
-                    'bg-gray-100': !isOn
-                  })}
+                    "bg-black": isOn,
+                    "bg-gray-100": !isOn,
+                  }
+                )}
               />
             );
           })}
@@ -40,4 +38,4 @@ export default function Screen({ matrix }: ScreenProps) {
       ))}
     </div>
   );
-};
+}
