@@ -8,7 +8,7 @@ interface ScreenProps {
 
 export default function Screen({ matrix }: ScreenProps) {
   return (
-    <div className="flex flex-col">
+    <div className="flex w-full flex-col">
       {matrix.map((rowData, rowIndex) => (
         <div
           key={`row-${rowIndex.toString()}`}
@@ -21,8 +21,11 @@ export default function Screen({ matrix }: ScreenProps) {
             return (
               <div
                 key={`pixel-${rowIndex.toString()}-${colIndex.toString()}`}
+                style={{
+                  width: `calc(100% / ${SCREEN_WIDTH.toString()})`
+                }}
                 className={clsx(`
-                  aspect-square w-[20px] shrink-0 border-1 border-solid
+                  box-border aspect-square shrink-0 border-1 border-solid
                   border-gray-50
                 `,
                   {

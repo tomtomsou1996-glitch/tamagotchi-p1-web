@@ -120,7 +120,6 @@ static void hal_sleep_until(timestamp_t ts)
 static void hal_update_screen(void)
 {
     matrix_to_bitfield_json();
-    // printf("len = %d\n", strlen(screen_update_js_buffer));
     emscripten_run_script(screen_update_js_buffer);
 }
 
@@ -131,8 +130,8 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-    char buffer[100];
-    int cx = snprintf(buffer, 100, "console.log({\"icon\":%d,\"val\":%d})", icon, val);
+    char buffer[50];
+    int cx = snprintf(buffer, 50, "postMessage({\"icon\":%d,\"val\":%d})", icon, val);
     if (cx > 0)
     {
         emscripten_run_script(buffer);
