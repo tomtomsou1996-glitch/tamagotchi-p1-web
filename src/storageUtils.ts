@@ -65,8 +65,7 @@ export async function loadWasmStateFromIndexedDB(module) {
   });
 
   if (state?.buffer && module != null) {
-    const bytesToCopy = Math.min(state.buffer.length, module.HEAPU8.length);
-    module.HEAPU8.set(state.buffer.slice(0, bytesToCopy));
+    module.HEAPU8.set(state.buffer);
   }
 
   db.close();

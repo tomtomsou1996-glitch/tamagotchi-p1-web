@@ -10,14 +10,16 @@
 
 #define LCD_HEIGHT 16
 #define LCD_WIDTH 32
+#define ICON_COUNT 8
 #define JS_BUFFER_SIZE 200
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{false}};
 static char screen_update_js_buffer[JS_BUFFER_SIZE] = {0};
+static bool_t icons[ICON_COUNT] = {false};
 static char icon_update_js_buffer[JS_BUFFER_SIZE] = {0};
 
 static timestamp_t screen_ts = 0;
-static u32_t ts_freq = 10000;
+static u32_t ts_freq = 1000;
 static u8_t g_framerate = 30;
 
 static bool_t button_left_pressed = false;
@@ -91,6 +93,26 @@ void matrix_to_bitfield_json()
     }
 }
 
+void icons_to_json()
+{
+    strcpy(icon_update_js_buffer, "postMessage([");
+    int bufferIndex = strlen("postMessage([");
+
+    for (int i = 0; i < sizeof(icons); i++)
+    {
+        icon_update_js_buffer[bufferIndex++] = icons[i] ? '1' : '0';
+
+        if (i < sizeof(icons) - 1)
+        {
+            icon_update_js_buffer[bufferIndex++] = ',';
+        }
+    }
+
+    icon_update_js_buffer[bufferIndex++] = ']';
+    icon_update_js_buffer[bufferIndex++] = ')';
+    icon_update_js_buffer[bufferIndex] = '\0';
+}
+
 static void *hal_malloc(u32_t size)
 {
     return NULL;
@@ -129,6 +151,7 @@ static void hal_sleep_until(timestamp_t ts)
 static void hal_update_screen(void)
 {
     matrix_to_bitfield_json();
+    icons_to_json();
     emscripten_run_script(screen_update_js_buffer);
     emscripten_run_script(icon_update_js_buffer);
 }
@@ -140,8 +163,7 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-    // printf("icon: %d, val: %d\n");
-    snprintf(icon_update_js_buffer, 50, "postMessage({\"icon\":%d,\"val\":%d})", icon, val);
+    icons[icon] = val;
 }
 
 static void hal_set_frequency(u32_t freq)
@@ -191,11 +213,17 @@ void tama_wasm_init()
 
 void tama_wasm_step()
 {
+    timestamp_t ts;
+
     if (!g_hal->handler())
     {
-        tamalib_step();
+        if (cpu_step())
+        {
+            tamalib_set_exec_mode(EXEC_MODE_PAUSE);
+        }
 
-        timestamp_t ts = g_hal->get_timestamp();
+        ts = g_hal->get_timestamp();
+
         if (ts - screen_ts >= ts_freq / g_framerate)
         {
             screen_ts = ts;
@@ -220,6 +248,6 @@ void tama_wasm_button(char button, bool_t down)
         button_right_pressed = down == 1;
         break;
     default:
-        printf("Unknown button\n");
+        printf("Unknown button: %c\n", button);
     }
 }

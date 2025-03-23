@@ -2,20 +2,19 @@ import "./App.css";
 
 import { useEffect, useState } from "react";
 
+import imgUrl from "./bg.webp";
 import Button from "./Button";
 import IconBar from "./IconBar";
 import Screen from "./Screen";
 import TamaWorker from "./worker?worker";
-
 let worker;
 
 export const SCREEN_WIDTH = 32;
 
 // todo
-// * icons
 // * audio
-// * bg picture
-
+// speed control
+// tamagochi -> tamagotchi
 function postMessageToWorker(data) {
   if (worker != null) {
     //console.log("Posting message to worker: ", data);
@@ -32,20 +31,11 @@ function App() {
       worker = new TamaWorker();
       worker.addEventListener("message", ({ data }) => {
         if (Array.isArray(data)) {
-          setScreenMatrix(data);
-        } else {
-          const { icon, val } = data as { icon: number; val: number };
-
-          // console.count([
-          //   ...icons.slice(0, icon),
-          //   val === 1,
-          //   ...icons.slice(icon + 1),
-          // ]);
-          setIcons([
-            ...icons.slice(0, icon),
-            val === 1,
-            ...icons.slice(icon + 1),
-          ]);
+          if (data.length == 8) {
+            setIcons(data.map((icon) => icon === 1));
+          } else {
+            setScreenMatrix(data);
+          }
         }
       });
 
@@ -55,16 +45,26 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-2">
-      <IconBar
-        icons={[0, 1, 2, 3]}
-        status={[0, 1, 2, 3].map((icon) => icons[icon])}
-      />
-      {screenMatrix && <Screen matrix={screenMatrix} />}
-      <IconBar
-        icons={[4, 5, 6, 7]}
-        status={[4, 5, 6, 7].map((icon) => icons[icon])}
-      />
+    <div className="flex w-[330px] flex-col gap-2">
+      <div className="relative flex h-[312px] w-full flex-col bg-no-repeat">
+        <IconBar
+          icons={[0, 1, 2, 3]}
+          status={[0, 1, 2, 3].map((icon) => icons[icon])}
+        />
+        {screenMatrix && <Screen matrix={screenMatrix} />}
+        <IconBar
+          icons={[4, 5, 6, 7]}
+          status={[4, 5, 6, 7].map((icon) => icons[icon])}
+        />
+        <div
+          className={`
+            absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat opacity-30
+          `}
+          style={{
+            backgroundImage: `url(${imgUrl})`,
+          }}
+        ></div>
+      </div>
       <div className="flex justify-center gap-10">
         <Button label="A" toucButton={postMessageToWorker} />
         <Button label="B" toucButton={postMessageToWorker} />

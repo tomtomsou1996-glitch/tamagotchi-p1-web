@@ -24,11 +24,11 @@ export default function Screen({ matrix }: ScreenProps) {
                 className={clsx(
                   `
                     box-border aspect-square shrink-0 border-1 border-solid
-                    border-gray-50
+                    border-gray-100/40
                   `,
                   {
                     "bg-black": isOn,
-                    "bg-gray-100": !isOn,
+                    "bg-gray-100/60": !isOn,
                   }
                 )}
               />

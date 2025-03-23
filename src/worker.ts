@@ -3,20 +3,21 @@ import {
   saveWasmStateToIndexedDB,
 } from "./storageUtils";
 import { default as TamaModule } from "./wasm/tama";
+
 let module;
 
 const initGame = async () => {
   module = await TamaModule();
   module._tama_wasm_init();
-
   await loadWasmStateFromIndexedDB(module);
+
   console.log("WASM module initialized");
 };
 
 initGame();
 
 function pumpMessages() {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 25; i++) {
     if (module != null) {
       module._tama_wasm_step();
     }
