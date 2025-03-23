@@ -10,6 +10,7 @@ tama.js: tama_rom.h
 		-s EXPORT_ES6=1 \
 		-sMODULARIZE \
 		-s EXPORT_NAME="TamaModule" \
+		-s INITIAL_HEAP=65536 \
 		-Oz \
 		tama.c $(wildcard ../tamalib/*.c) \
 		-o tama.js

@@ -14,11 +14,11 @@ export const SCREEN_WIDTH = 32;
 // todo
 // * icons
 // * audio
-// * save
+// * bg picture
 
 function postMessageToWorker(data) {
   if (worker != null) {
-    console.log("Posting message to worker: ", data);
+    //console.log("Posting message to worker: ", data);
     worker.postMessage(data);
   }
 }
@@ -35,9 +35,15 @@ function App() {
           setScreenMatrix(data);
         } else {
           const { icon, val } = data as { icon: number; val: number };
+
+          // console.count([
+          //   ...icons.slice(0, icon),
+          //   val === 1,
+          //   ...icons.slice(icon + 1),
+          // ]);
           setIcons([
             ...icons.slice(0, icon),
-            val === 0,
+            val === 1,
             ...icons.slice(icon + 1),
           ]);
         }
@@ -64,6 +70,24 @@ function App() {
         <Button label="B" toucButton={postMessageToWorker} />
         <Button label="C" toucButton={postMessageToWorker} />
       </div>
+      <button
+        type="button"
+        className="border-2"
+        onClick={() => {
+          postMessageToWorker("load");
+        }}
+      >
+        Load
+      </button>
+      <button
+        type="button"
+        className="border-2"
+        onClick={() => {
+          postMessageToWorker("save");
+        }}
+      >
+        Save
+      </button>
     </div>
   );
 }

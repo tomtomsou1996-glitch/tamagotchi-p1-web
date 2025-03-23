@@ -14,9 +14,15 @@
 
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{false}};
 static char screen_update_js_buffer[JS_BUFFER_SIZE] = {0};
+static char icon_update_js_buffer[JS_BUFFER_SIZE] = {0};
+
 static timestamp_t screen_ts = 0;
 static u32_t ts_freq = 10000;
 static u8_t g_framerate = 30;
+
+static bool_t button_left_pressed = false;
+static bool_t button_middle_pressed = false;
+static bool_t button_right_pressed = false;
 
 void matrix_to_bitfield_json()
 {
@@ -124,6 +130,7 @@ static void hal_update_screen(void)
 {
     matrix_to_bitfield_json();
     emscripten_run_script(screen_update_js_buffer);
+    emscripten_run_script(icon_update_js_buffer);
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
@@ -133,12 +140,8 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-    char buffer[50];
-    int cx = snprintf(buffer, 50, "postMessage({\"icon\":%d,\"val\":%d})", icon, val);
-    if (cx > 0)
-    {
-        emscripten_run_script(buffer);
-    }
+    // printf("icon: %d, val: %d\n");
+    snprintf(icon_update_js_buffer, 50, "postMessage({\"icon\":%d,\"val\":%d})", icon, val);
 }
 
 static void hal_set_frequency(u32_t freq)
@@ -153,7 +156,10 @@ static void hal_play_frequency(bool_t play)
 
 static int hal_handler(void)
 {
-    //  printf("hal_handler");
+    tamalib_set_button(BTN_LEFT, button_left_pressed ? BTN_STATE_PRESSED : BTN_STATE_RELEASED);
+    tamalib_set_button(BTN_MIDDLE, button_middle_pressed ? BTN_STATE_PRESSED : BTN_STATE_RELEASED);
+    tamalib_set_button(BTN_RIGHT, button_right_pressed ? BTN_STATE_PRESSED : BTN_STATE_RELEASED);
+
     return 0;
 }
 
@@ -200,23 +206,20 @@ void tama_wasm_step()
 
 void tama_wasm_button(char button, bool_t down)
 {
-    button_t tamaButton;
-    printf("Button %c, %d\n", button, down);
+    // printf("tama_wasm_button : %d %d\n", button, down);
+
     switch (button)
     {
     case 'A':
-        tamaButton = BTN_LEFT;
+        button_left_pressed = down == 1;
         break;
     case 'B':
-        tamaButton = BTN_MIDDLE;
+        button_middle_pressed = down == 1;
         break;
     case 'C':
-        tamaButton = BTN_RIGHT;
+        button_right_pressed = down == 1;
         break;
     default:
         printf("Unknown button\n");
-        return;
     }
-
-    tamalib_set_button(tamaButton, down ? BTN_STATE_PRESSED : BTN_STATE_RELEASED);
 }
