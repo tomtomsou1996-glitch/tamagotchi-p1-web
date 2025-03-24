@@ -8,7 +8,7 @@ import IconBar from "./IconBar";
 import Screen from "./Screen";
 import { useBeep } from "./useBeep";
 import TamaWorker from "./worker?worker";
-let worker;
+let worker: Worker | undefined;
 
 export const SCREEN_WIDTH = 32;
 

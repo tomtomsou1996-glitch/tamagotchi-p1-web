@@ -351,3 +351,95 @@ void tama_wasm_set_value(u32_t *saved_state, size_t index, u32_t value)
 {
     saved_state[index] = value;
 }
+
+cpu_state_t *create_serializable_state()
+{
+    state_t *src = cpu_get_state();
+    cpu_state_t *dest = (cpu_state_t *)malloc(sizeof(cpu_state_t));
+
+    if (dest == NULL)
+    {
+        return NULL;
+    }
+
+    // Copy register values
+    dest->pc = *(src->pc);
+    dest->x = *(src->x);
+    dest->y = *(src->y);
+    dest->a = *(src->a);
+    dest->b = *(src->b);
+    dest->np = *(src->np);
+    dest->sp = *(src->sp);
+    dest->flags = *(src->flags);
+
+    // Copy timer values
+    dest->tick_counter = *(src->tick_counter);
+    dest->clk_timer_2hz_timestamp = *(src->clk_timer_2hz_timestamp);
+    dest->clk_timer_4hz_timestamp = *(src->clk_timer_4hz_timestamp);
+    dest->clk_timer_8hz_timestamp = *(src->clk_timer_8hz_timestamp);
+    dest->clk_timer_16hz_timestamp = *(src->clk_timer_16hz_timestamp);
+    dest->clk_timer_32hz_timestamp = *(src->clk_timer_32hz_timestamp);
+    dest->clk_timer_64hz_timestamp = *(src->clk_timer_64hz_timestamp);
+    dest->clk_timer_128hz_timestamp = *(src->clk_timer_128hz_timestamp);
+    dest->clk_timer_256hz_timestamp = *(src->clk_timer_256hz_timestamp);
+    dest->prog_timer_timestamp = *(src->prog_timer_timestamp);
+    dest->prog_timer_enabled = *(src->prog_timer_enabled);
+    dest->prog_timer_data = *(src->prog_timer_data);
+    dest->prog_timer_rld = *(src->prog_timer_rld);
+
+    // Copy call depth
+    dest->call_depth = *(src->call_depth);
+
+    // Copy interrupt structures
+    memcpy(dest->interrupts, src->interrupts, INT_SLOT_NUM * sizeof(interrupt_t));
+
+    // Copy CPU halt status
+    dest->cpu_halted = *(src->cpu_halted);
+
+    // Copy memory buffer
+    memcpy(dest->memory, src->memory, MEM_BUFFER_SIZE * sizeof(MEM_BUFFER_TYPE));
+
+    return dest;
+}
+
+void restore_from_serializable_state(cpu_state_t *src)
+{
+    state_t *dst = cpu_get_state();
+
+    // Copy register values
+    *(dst->pc) = src->pc;
+    *(dst->x) = src->x;
+    *(dst->y) = src->y;
+    *(dst->a) = src->a;
+    *(dst->b) = src->b;
+    *(dst->np) = src->np;
+    *(dst->sp) = src->sp;
+    *(dst->flags) = src->flags;
+
+    // Copy timer values
+    *(dst->tick_counter) = src->tick_counter;
+    *(dst->clk_timer_2hz_timestamp) = src->clk_timer_2hz_timestamp;
+    *(dst->clk_timer_4hz_timestamp) = src->clk_timer_4hz_timestamp;
+    *(dst->clk_timer_8hz_timestamp) = src->clk_timer_8hz_timestamp;
+    *(dst->clk_timer_16hz_timestamp) = src->clk_timer_16hz_timestamp;
+    *(dst->clk_timer_32hz_timestamp) = src->clk_timer_32hz_timestamp;
+    *(dst->clk_timer_64hz_timestamp) = src->clk_timer_64hz_timestamp;
+    *(dst->clk_timer_128hz_timestamp) = src->clk_timer_128hz_timestamp;
+    *(dst->clk_timer_256hz_timestamp) = src->clk_timer_256hz_timestamp;
+    *(dst->prog_timer_timestamp) = src->prog_timer_timestamp;
+    *(dst->prog_timer_enabled) = src->prog_timer_enabled;
+    *(dst->prog_timer_data) = src->prog_timer_data;
+    *(dst->prog_timer_rld) = src->prog_timer_rld;
+
+    // Copy call depth
+    *(dst->call_depth) = src->call_depth;
+
+    // Copy interrupt structures
+    memcpy(dst->interrupts, src->interrupts, INT_SLOT_NUM * sizeof(interrupt_t));
+
+    // Copy CPU halt status
+    *(dst->cpu_halted) = src->cpu_halted;
+
+    // Copy memory buffer
+    memcpy(dst->memory, src->memory, MEM_BUFFER_SIZE * sizeof(MEM_BUFFER_TYPE));
+}
