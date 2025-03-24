@@ -22,7 +22,7 @@ It supports:
 - [`wasm/tama.c`](src/wasm/tama.c) (also compiled to WASM): a HAL to run TamaLIB and send game state updates to the UI (via `postMessage`)
 - [`worker.ts`](src/worker.ts)
   - Loading the WASM module
-  - Persistence to IndexDB
+  - Persistence to IndexedDB
   - Syncing the UI's button states to the emulated hardware
   - Game loop
 
