@@ -50,7 +50,7 @@ function App() {
   }, []);
 
   return (
-    <div className="flex w-[330px] flex-col items-center gap-2">
+    <div className="flex w-[330px] flex-col items-center gap-2 select-none">
       <div className="relative flex h-[312px] w-full flex-col bg-no-repeat">
         <IconBar
           icons={[0, 1, 2, 3]}

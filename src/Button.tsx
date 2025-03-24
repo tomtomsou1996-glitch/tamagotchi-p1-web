@@ -25,6 +25,15 @@ export default function Button({ label, toucButton }: ButtonProps) {
       onMouseUp={() => {
         toucButton({ button: label, pressed: false });
       }}
+      onTouchStart={() => {
+        toucButton({ button: label, pressed: true });
+      }}
+      onTouchEnd={() => {
+        toucButton({ button: label, pressed: false });
+      }}
+      onTouchCancel={() => {
+        toucButton({ button: label, pressed: false });
+      }}
     >
       {label}
     </button>
