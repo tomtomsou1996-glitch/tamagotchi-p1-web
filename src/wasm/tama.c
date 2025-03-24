@@ -285,3 +285,69 @@ void tama_wasm_button(char button, bool_t down)
         printf("Unknown button: %c\n", button);
     }
 }
+
+void tama_wasm_save()
+{
+    cpu_state_t *cpu_state = create_serializable_state();
+    size_t length = sizeof(cpu_state_t);
+    if (cpu_state == NULL)
+    {
+        return;
+    }
+
+    size_t max_size = length * 11 + 3;
+
+    // Allocate memory for the JSON string
+    char *json_str = (char *)malloc(max_size);
+    if (json_str == NULL)
+    {
+        free(cpu_state);
+        return;
+    }
+
+    snprintf(json_str, max_size, "saveToDB([");
+    size_t pos = strlen("saveToDB([");
+
+    // Add each integer to the JSON string
+    for (size_t i = 0; i < length; i++)
+    {
+        // Convert the integer to a string and get its length
+        int written = snprintf(json_str + pos, max_size - pos, "%u", ((u32_t *)cpu_state)[i]);
+        if (written < 0)
+        {
+            free(cpu_state);
+            free(json_str);
+            return;
+        }
+
+        pos += written;
+
+        // Add a comma if this is not the last element
+        if (i < length - 1)
+        {
+            json_str[pos++] = ',';
+        }
+    }
+
+    json_str[pos++] = ']';
+    json_str[pos++] = ')';
+    json_str[pos] = '\0';
+
+    emscripten_run_script(json_str);
+
+    free(cpu_state);
+    free(json_str);
+}
+
+void tama_wasm_load(u32_t *saved_state)
+{
+    cpu_state_t cpu_state;
+    memcpy(&cpu_state, saved_state, sizeof(cpu_state_t));
+    restore_from_serializable_state(&cpu_state);
+    tamalib_refresh_hw();
+}
+
+void tama_wasm_set_value(u32_t *saved_state, size_t index, u32_t value)
+{
+    saved_state[index] = value;
+}

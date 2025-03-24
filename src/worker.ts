@@ -1,5 +1,5 @@
 import {
-  loadWasmStateFromIndexedDB,
+  readWasmStateFromIndexedDB,
   saveWasmStateToIndexedDB,
 } from "./storageUtils";
 import { default as TamaModule } from "./wasm/tama";
@@ -10,9 +10,9 @@ const initGame = async () => {
   module = await TamaModule();
   module._tama_wasm_init();
   console.log("WASM module initialized");
-};
 
-initGame();
+  await restoreFromDB();
+};
 
 function pumpMessages() {
   for (let i = 0; i < 25; i++) {
@@ -24,16 +24,52 @@ function pumpMessages() {
   setTimeout(pumpMessages);
 }
 
+function autoSave() {
+  if (module != null) {
+    // This ends up calling self.saveToDB with the CPU state
+    module._tama_wasm_save();
+  }
+
+  setTimeout(autoSave, 5000);
+}
+
+async function restoreFromDB() {
+  if (module == null) {
+    return;
+  }
+
+  const buffer = await readWasmStateFromIndexedDB();
+  if (buffer == null) {
+    return;
+  }
+
+  const cBuffer: number = module._malloc(buffer.length * 4) as number;
+  if (cBuffer) {
+    for (let i = 0; i < buffer.length; i++) {
+      module._tama_wasm_set_value(cBuffer, i, buffer[i]);
+    }
+    module._tama_wasm_load(cBuffer);
+    module._free(cBuffer);
+    console.log("Restored from IndexedDB");
+  }
+}
+
+self.saveToDB = async function (data: number[]) {
+  await saveWasmStateToIndexedDB(data);
+  console.log("Saved to IndexedDB");
+};
+
 self.onmessage = async function (e: {
   data: string | { button: string; pressed: boolean };
 }) {
   if (e.data === "start") {
     console.log("Starting event loop");
     pumpMessages();
-  } else if (e.data === "load") {
-    await loadWasmStateFromIndexedDB(module);
   } else if (e.data === "save") {
-    await saveWasmStateToIndexedDB(module);
+    if (module != null) {
+      // This ends up calling self.saveToDB with the CPU state
+      module._tama_wasm_save();
+    }
   } else if (typeof e.data !== "string") {
     const { button, pressed } = e.data;
     if (module != null) {
@@ -41,3 +77,6 @@ self.onmessage = async function (e: {
     }
   }
 };
+
+initGame();
+autoSave();

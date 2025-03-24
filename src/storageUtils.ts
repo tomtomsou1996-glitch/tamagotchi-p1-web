@@ -1,12 +1,7 @@
-export async function saveWasmStateToIndexedDB(module) {
-  if (module == null) {
-    return;
-  }
+export async function saveWasmStateToIndexedDB(cpuState: number[]) {
+  const memory = new Uint32Array(cpuState);
 
-  const memory = new Uint8Array(module.HEAPU8);
-
-  // Open IndexedDB
-  const db = await new Promise((resolve, reject) => {
+  const db: IDBDatabase = await new Promise((resolve, reject) => {
     const request = indexedDB.open("TamaDB", 1);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -16,7 +11,7 @@ export async function saveWasmStateToIndexedDB(module) {
       resolve(request.result);
     };
     request.onerror = () => {
-      reject(request.error);
+      reject(request.error ?? new Error("Unknown DB error"));
     };
   });
 
@@ -25,19 +20,20 @@ export async function saveWasmStateToIndexedDB(module) {
     const store = transaction.objectStore("states");
     const request = store.put({ id: "tamaState", buffer: memory });
     request.onsuccess = () => {
-      resolve();
+      resolve(undefined);
     };
     request.onerror = () => {
-      reject(request.error);
+      reject(request.error ?? new Error("Unknown DB error"));
     };
   });
 
   db.close();
 }
 
-export async function loadWasmStateFromIndexedDB(module) {
-  // Open IndexedDB
-  const db = await new Promise((resolve, reject) => {
+export async function readWasmStateFromIndexedDB(): Promise<
+  Uint32Array | undefined
+> {
+  const db: IDBDatabase = await new Promise((resolve, reject) => {
     const request = indexedDB.open("TamaDB", 1);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -47,26 +43,28 @@ export async function loadWasmStateFromIndexedDB(module) {
       resolve(request.result);
     };
     request.onerror = () => {
-      reject(request.error);
+      reject(request.error ?? new Error("Unknown DB error"));
     };
   });
 
-  // Read the state
-  const state = await new Promise((resolve, reject) => {
-    const transaction = db.transaction(["states"], "readonly");
-    const store = transaction.objectStore("states");
-    const request = store.get("tamaState");
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-    request.onerror = () => {
-      reject(request.error);
-    };
-  });
-
-  if (state?.buffer && module != null) {
-    module.HEAPU8.set(state.buffer);
-  }
+  const buffer: Uint32Array | undefined = await new Promise(
+    (resolve, reject) => {
+      const transaction = db.transaction(["states"], "readonly");
+      const store = transaction.objectStore("states");
+      const request = store.get("tamaState");
+      request.onsuccess = () => {
+        const result = request.result as { buffer?: Uint32Array } | undefined;
+        if (result != null && result.buffer instanceof Uint32Array) {
+          resolve(result.buffer);
+        }
+      };
+      request.onerror = () => {
+        reject(request.error ?? new Error("Unknown DB error"));
+      };
+    }
+  );
 
   db.close();
+
+  return buffer;
 }

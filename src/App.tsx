@@ -36,11 +36,9 @@ function App() {
             setScreenMatrix(data);
           }
         } else if (Number.isFinite(data)) {
-          console.log(data, isMuted.current);
           if (data === -1) {
             stopBeep();
           } else if (!isMuted.current) {
-            console.log(data);
             startBeep(data as number);
           }
         }
@@ -83,38 +81,20 @@ function App() {
           type="button"
           className="flex-grow border-1"
           onClick={() => {
-            postMessageToWorker("load");
-          }}
-        >
-          Load
-        </button>
-        <button
-          type="button"
-          className="flex-grow border-1"
-          onClick={() => {
-            postMessageToWorker("save");
-          }}
-        >
-          Save
-        </button>
-        <button
-          type="button"
-          className="flex-grow border-1"
-          onClick={() => {
             isMuted.current = !isMuted.current;
           }}
         >
           {isMuted.current ? "Unmute" : "Mute"}
         </button>
+        <a
+          href="https://tamaplanet.com/images/docs/Tama_Manuals/p1.pdf"
+          target="_blank"
+          rel="noreferrer noopener"
+          className={"flex-grow border-1 text-center"}
+        >
+          Manual
+        </a>
       </div>
-
-      <a
-        href="https://tamaplanet.com/images/docs/Tama_Manuals/p1.pdf"
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        Manual
-      </a>
     </div>
   );
 }

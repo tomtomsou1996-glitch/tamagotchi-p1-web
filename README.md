@@ -52,6 +52,6 @@ Run `npm run dev` to start the game locally. You can also run `npm run wasm` to 
 ## Why?
 
 - This is a good project to learn about WebAssembly in JavaScript with.
-- While there are Tamagotchi P1 emulators for real hardware (and learn a lot by [reading](https://github.com/ericlewis/playdate-tamagotchi) [their](https://github.com/GaryZ88/ArduinoGotchi) [code](https://github.com/GMMan/flipperzero-tamagotch-p1), thanks!), I didn't find any web-based options.
+- While there are Tamagotchi P1 emulators for real hardware (and I learned a lot by [reading](https://github.com/ericlewis/playdate-tamagotchi) [their](https://github.com/GaryZ88/ArduinoGotchi) [code](https://github.com/GMMan/flipperzero-tamagotch-p1), thanks!), I didn't find any web-based options.
 
 ![Screencast](static/initial.gif?raw=true)
