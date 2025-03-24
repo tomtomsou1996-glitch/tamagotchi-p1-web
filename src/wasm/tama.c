@@ -268,7 +268,7 @@ void tama_wasm_step()
 
 void tama_wasm_button(char button, bool_t down)
 {
-    // printf("tama_wasm_button : %d %d\n", button, down);
+    printf("tama_wasm_button : %d %d\n", button, down);
 
     switch (button)
     {

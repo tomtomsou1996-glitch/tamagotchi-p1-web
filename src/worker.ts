@@ -102,6 +102,7 @@ self.onmessage = function (e: {
     }
   } else if (typeof e.data !== "string") {
     const { button, pressed } = e.data;
+    console.log("Button: ", e.data);
     if (module != null) {
       module._tama_wasm_button(button.charCodeAt(0), pressed ? 1 : 0);
     }
