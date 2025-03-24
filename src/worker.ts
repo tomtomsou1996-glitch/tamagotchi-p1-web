@@ -10,14 +10,33 @@ declare global {
   }
 }
 
-let module;
+let module:
+  | {
+      _tama_wasm_init: () => void;
+      _tama_wasm_save: () => void;
+      _tama_wasm_set_value: (
+        buffer: number,
+        index: number,
+        value: number
+      ) => void;
+      _tama_wasm_load: (buffer: number) => void;
+      _tama_wasm_button: (button: number, pressed: number) => void;
+      _tama_wasm_step: () => void;
+      _malloc: (buffer: number) => number;
+      _free: (buffer: number) => void;
+    }
+  | undefined;
 
 const initGame = async () => {
   module = await TamaModule();
-  module._tama_wasm_init();
-  console.log("WASM module initialized");
+  if (module != null) {
+    module._tama_wasm_init();
+    console.log("WASM module initialized");
 
-  await restoreFromDB();
+    await restoreFromDB();
+  } else {
+    console.error("Could not initialze WASM module");
+  }
 };
 
 function pumpMessages() {
@@ -49,7 +68,7 @@ async function restoreFromDB() {
     return;
   }
 
-  const cBuffer: number = module._malloc(buffer.length * 4) as number;
+  const cBuffer: number = module._malloc(buffer.length * 4);
   if (cBuffer) {
     for (let i = 0; i < buffer.length; i++) {
       module._tama_wasm_set_value(cBuffer, i, buffer[i]);
@@ -65,7 +84,7 @@ self.saveToDB = function (data: number[]) {
     .then(() => {
       console.log("Saved to IndexedDB");
     })
-    .catch((e) => {
+    .catch((e: unknown) => {
       console.error("Error saving to IndexedDB: ", e);
     });
 };
@@ -91,6 +110,6 @@ self.onmessage = function (e: {
 
 initGame()
   .then(autoSave)
-  .catch((e) => {
+  .catch((e: unknown) => {
     console.error("Error initializing game: ", e);
   });

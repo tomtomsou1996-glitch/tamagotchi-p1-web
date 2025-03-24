@@ -10,7 +10,8 @@ export async function saveWasmStateToIndexedDB(cpuState: number[]) {
     request.onsuccess = () => {
       resolve(request.result);
     };
-    request.onerror = () => {
+    request.onerror = (ev: unknown) => {
+      console.error("DB save error on open", ev);
       reject(request.error ?? new Error("Unknown DB error"));
     };
   });
@@ -22,7 +23,8 @@ export async function saveWasmStateToIndexedDB(cpuState: number[]) {
     request.onsuccess = () => {
       resolve(undefined);
     };
-    request.onerror = () => {
+    request.onerror = (ev: unknown) => {
+      console.error("DB save error on write", ev);
       reject(request.error ?? new Error("Unknown DB error"));
     };
   });
