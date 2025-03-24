@@ -108,8 +108,8 @@ self.onmessage = function (e: {
   }
 };
 
-initGame()
-  .then(autoSave)
-  .catch((e: unknown) => {
-    console.error("Error initializing game: ", e);
-  });
+initGame().catch((e: unknown) => {
+  console.error("Error initializing game: ", e);
+});
+
+autoSave();
