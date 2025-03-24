@@ -1,23 +1,19 @@
 import "./App.css";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import imgUrl from "./bg.webp";
 import Button from "./Button";
 import IconBar from "./IconBar";
 import Screen from "./Screen";
+import { useBeep } from "./useBeep";
 import TamaWorker from "./worker?worker";
 let worker;
 
 export const SCREEN_WIDTH = 32;
 
-// todo
-// * audio
-// speed control
-// tamagochi -> tamagotchi
 function postMessageToWorker(data) {
   if (worker != null) {
-    //console.log("Posting message to worker: ", data);
     worker.postMessage(data);
   }
 }
@@ -25,6 +21,9 @@ function postMessageToWorker(data) {
 function App() {
   const [screenMatrix, setScreenMatrix] = useState<number[] | undefined>();
   const [icons, setIcons] = useState<boolean[]>(new Array(8).fill(false));
+  const [startBeep, stopBeep] = useBeep();
+
+  const isMuted = useRef<boolean>(true);
 
   useEffect(() => {
     if (worker == null) {
@@ -36,6 +35,14 @@ function App() {
           } else {
             setScreenMatrix(data);
           }
+        } else if (Number.isFinite(data)) {
+          console.log(data, isMuted.current);
+          if (data === -1) {
+            stopBeep();
+          } else if (!isMuted.current) {
+            console.log(data);
+            startBeep(data as number);
+          }
         }
       });
 
@@ -45,7 +52,7 @@ function App() {
   }, []);
 
   return (
-    <div className="flex w-[330px] flex-col gap-2">
+    <div className="flex w-[330px] flex-col items-center gap-2">
       <div className="relative flex h-[312px] w-full flex-col bg-no-repeat">
         <IconBar
           icons={[0, 1, 2, 3]}
@@ -70,24 +77,44 @@ function App() {
         <Button label="B" toucButton={postMessageToWorker} />
         <Button label="C" toucButton={postMessageToWorker} />
       </div>
-      <button
-        type="button"
-        className="border-2"
-        onClick={() => {
-          postMessageToWorker("load");
-        }}
+
+      <div className="flex w-full">
+        <button
+          type="button"
+          className="flex-grow border-1"
+          onClick={() => {
+            postMessageToWorker("load");
+          }}
+        >
+          Load
+        </button>
+        <button
+          type="button"
+          className="flex-grow border-1"
+          onClick={() => {
+            postMessageToWorker("save");
+          }}
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          className="flex-grow border-1"
+          onClick={() => {
+            isMuted.current = !isMuted.current;
+          }}
+        >
+          {isMuted.current ? "Unmute" : "Mute"}
+        </button>
+      </div>
+
+      <a
+        href="https://tamaplanet.com/images/docs/Tama_Manuals/p1.pdf"
+        target="_blank"
+        rel="noreferrer noopener"
       >
-        Load
-      </button>
-      <button
-        type="button"
-        className="border-2"
-        onClick={() => {
-          postMessageToWorker("save");
-        }}
-      >
-        Save
-      </button>
+        Manual
+      </a>
     </div>
   );
 }

@@ -17,6 +17,7 @@ static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{false}};
 static char screen_update_js_buffer[JS_BUFFER_SIZE] = {0};
 static bool_t icons[ICON_COUNT] = {false};
 static char icon_update_js_buffer[JS_BUFFER_SIZE] = {0};
+static char sound_update_js_buffer[JS_BUFFER_SIZE] = {0};
 
 static timestamp_t screen_ts = 0;
 static u32_t ts_freq = 1000;
@@ -25,6 +26,8 @@ static u8_t g_framerate = 30;
 static bool_t button_left_pressed = false;
 static bool_t button_middle_pressed = false;
 static bool_t button_right_pressed = false;
+
+static float frequency = -1;
 
 void matrix_to_bitfield_json()
 {
@@ -37,7 +40,7 @@ void matrix_to_bitfield_json()
     result = snprintf(screen_update_js_buffer, remaining, "postMessage([");
     if (result < 0 || result >= remaining)
     {
-        printf("Error: JS code buffer not enough for opening part");
+        printf("Error: JS code buffer not enough for opening part\n");
         return;
     }
 
@@ -77,7 +80,7 @@ void matrix_to_bitfield_json()
         {
             if (remaining == 0)
             {
-                printf("Error: JS code buffer not enough for comma");
+                printf("Error: JS code buffer not enough for comma\n");
             }
             break;
         }
@@ -95,22 +98,45 @@ void matrix_to_bitfield_json()
 
 void icons_to_json()
 {
-    strcpy(icon_update_js_buffer, "postMessage([");
-    int bufferIndex = strlen("postMessage([");
+    const char *prefix = "postMessage([";
+    size_t prefix_len = strlen(prefix);
+    size_t buffer_size = sizeof(icon_update_js_buffer);
 
-    for (int i = 0; i < sizeof(icons); i++)
+    if (buffer_size <= prefix_len)
+    {
+        printf("Error: JS code buffer not enough for opening part\n");
+        return;
+    }
+
+    strncpy(icon_update_js_buffer, prefix, buffer_size - 1);
+    icon_update_js_buffer[prefix_len] = '\0';
+
+    size_t remaining_space = buffer_size - prefix_len - 1;
+    size_t bufferIndex = prefix_len;
+
+    for (size_t i = 0; i < sizeof(icons) && remaining_space > 3; i++)
     {
         icon_update_js_buffer[bufferIndex++] = icons[i] ? '1' : '0';
+        remaining_space--;
 
-        if (i < sizeof(icons) - 1)
+        if (i < sizeof(icons) - 1 && remaining_space > 2)
         {
             icon_update_js_buffer[bufferIndex++] = ',';
+            remaining_space--;
         }
     }
 
-    icon_update_js_buffer[bufferIndex++] = ']';
-    icon_update_js_buffer[bufferIndex++] = ')';
-    icon_update_js_buffer[bufferIndex] = '\0';
+    if (remaining_space >= 2)
+    {
+        icon_update_js_buffer[bufferIndex++] = ']';
+        icon_update_js_buffer[bufferIndex++] = ')';
+        icon_update_js_buffer[bufferIndex] = '\0';
+    }
+    else
+    {
+        icon_update_js_buffer[buffer_size - 1] = '\0';
+        printf("Error: JS code buffer not enough for icon update code\n");
+    }
 }
 
 static void *hal_malloc(u32_t size)
@@ -154,6 +180,7 @@ static void hal_update_screen(void)
     icons_to_json();
     emscripten_run_script(screen_update_js_buffer);
     emscripten_run_script(icon_update_js_buffer);
+    emscripten_run_script(sound_update_js_buffer);
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
@@ -168,12 +195,19 @@ static void hal_set_lcd_icon(u8_t icon, bool_t val)
 
 static void hal_set_frequency(u32_t freq)
 {
-    // printf("hal_set_frequency");
+    frequency = freq / 10;
 }
 
 static void hal_play_frequency(bool_t play)
 {
-    //  printf("hal_play_frequency");
+    if (play)
+    {
+        snprintf(sound_update_js_buffer, sizeof(sound_update_js_buffer), "postMessage(%.1f)", frequency);
+    }
+    else
+    {
+        snprintf(sound_update_js_buffer, sizeof(sound_update_js_buffer), "postMessage(-1)");
+    }
 }
 
 static int hal_handler(void)

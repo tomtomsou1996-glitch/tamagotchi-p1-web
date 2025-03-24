@@ -9,8 +9,6 @@ let module;
 const initGame = async () => {
   module = await TamaModule();
   module._tama_wasm_init();
-  await loadWasmStateFromIndexedDB(module);
-
   console.log("WASM module initialized");
 };
 
