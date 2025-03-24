@@ -59,7 +59,7 @@ self.saveToDB = async function (data: number[]) {
   console.log("Saved to IndexedDB");
 };
 
-self.onmessage = async function (e: {
+self.onmessage = function (e: {
   data: string | { button: string; pressed: boolean };
 }) {
   if (e.data === "start") {
@@ -78,5 +78,5 @@ self.onmessage = async function (e: {
   }
 };
 
-initGame();
+await initGame();
 autoSave();
