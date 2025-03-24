@@ -41,31 +41,28 @@ export const useBeep = (): UseBeepReturnType => {
     };
   }, []);
 
-  const startBeep = useCallback(
-    (frequency = 440, volume = 100): Promise<void> => {
-      const audioContext = getAudioContext();
+  const startBeep = useCallback((frequency = 440, volume = 100) => {
+    const audioContext = getAudioContext();
 
-      if (activeOscillatorRef.current) {
-        stopBeep();
-      }
+    if (activeOscillatorRef.current) {
+      stopBeep();
+    }
 
-      const oscillatorNode = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+    const oscillatorNode = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
 
-      oscillatorNode.connect(gainNode);
-      oscillatorNode.frequency.value = frequency;
-      oscillatorNode.type = "square";
+    oscillatorNode.connect(gainNode);
+    oscillatorNode.frequency.value = frequency;
+    oscillatorNode.type = "square";
 
-      gainNode.connect(audioContext.destination);
-      gainNode.gain.value = volume * 0.01;
+    gainNode.connect(audioContext.destination);
+    gainNode.gain.value = volume * 0.01;
 
-      activeOscillatorRef.current = oscillatorNode;
-      activeGainNodeRef.current = gainNode;
+    activeOscillatorRef.current = oscillatorNode;
+    activeGainNodeRef.current = gainNode;
 
-      oscillatorNode.start(audioContext.currentTime);
-    },
-    []
-  );
+    oscillatorNode.start(audioContext.currentTime);
+  }, []);
 
   const stopBeep = useCallback((): void => {
     if (!activeOscillatorRef.current) {

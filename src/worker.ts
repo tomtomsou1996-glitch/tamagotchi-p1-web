@@ -4,6 +4,12 @@ import {
 } from "./storageUtils";
 import { default as TamaModule } from "./wasm/tama";
 
+declare global {
+  interface Window {
+    saveToDB?: (data: number[]) => void;
+  }
+}
+
 let module;
 
 const initGame = async () => {
@@ -54,9 +60,14 @@ async function restoreFromDB() {
   }
 }
 
-self.saveToDB = async function (data: number[]) {
-  await saveWasmStateToIndexedDB(data);
-  console.log("Saved to IndexedDB");
+self.saveToDB = function (data: number[]) {
+  saveWasmStateToIndexedDB(data)
+    .then(() => {
+      console.log("Saved to IndexedDB");
+    })
+    .catch((e) => {
+      console.error("Error saving to IndexedDB: ", e);
+    });
 };
 
 self.onmessage = function (e: {
@@ -78,5 +89,8 @@ self.onmessage = function (e: {
   }
 };
 
-await initGame();
-autoSave();
+initGame()
+  .then(autoSave)
+  .catch((e) => {
+    console.error("Error initializing game: ", e);
+  });

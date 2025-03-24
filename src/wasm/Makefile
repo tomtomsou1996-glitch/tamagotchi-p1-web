@@ -16,6 +16,7 @@ tama.js: tama_rom.h
 		-o tama.js
 
 clean:
+	rm -f tama.b
 	rm -f tama_rom.h
 	rm -f tama.wasm
 	rm -f tama.js
