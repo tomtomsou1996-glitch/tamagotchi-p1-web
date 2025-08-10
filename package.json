@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "wasm": "cd src/wasm && make clean && wget https://archive.org/download/mame-0.221-roms-merged/tama.zip/tama.b && make",
+    "wasm": "cd src/wasm && make clean && curl -L -o tama.b https://archive.org/download/mame-0.221-roms-merged/tama.zip/tama.b && make",
     "dev": "npm run wasm && vite",
     "build": "npm run wasm && tsc -b && vite build",
     "lint": "eslint .",
